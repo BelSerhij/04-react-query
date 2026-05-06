@@ -1,15 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import SearchBar from '../SearchBar/SearchBar'
 import MovieGrid from '../MovieGrid/MovieGrid'
 import { fetchMovies } from '../../services/movieService'
-import { Toaster } from 'react-hot-toast'
+import toast, { Toaster } from 'react-hot-toast'
 import type { Movie } from '../../types/movie'
 import './App.module.css'
 import ErrorMessage from '../ErrorMessage/ErrorMessage'
 import MovieModal from '../MovieModal/MovieModal'
 import Loader from '../Loader/Loader'
-import Pagination from '../ReactPaginate/ReactPaginate';
+import ReactPaginate from '../ReactPaginate/ReactPaginate';
 
 export default function App() {
   const [query, setQuery] = useState<string>('');
@@ -20,8 +20,7 @@ export default function App() {
     data, 
     isLoading, 
     isError, 
-    isFetched,
-    // isSuccess 
+    isSuccess 
   } = useQuery({
     queryKey: ['movies', query, page],
     queryFn: () => fetchMovies(query, page),
@@ -31,7 +30,16 @@ export default function App() {
   });
 
   const movies = data?.results || [];
-  const totalPages = data?.total_pages || 0;
+  const pageCount = data?.total_pages || 0;
+
+  useEffect(() => {
+  if (isSuccess && movies.length === 0 && query.length > 0) {
+    toast.error("No movies found for your request", {
+      position: 'top-right',
+      duration: 3000,
+    });
+  }
+}, [isSuccess, movies.length, query]); 
 
   const handleSearchSubmit = (newQuery: string) => {
     setQuery(newQuery);
@@ -42,11 +50,11 @@ export default function App() {
     <>
       <SearchBar onSubmit={handleSearchSubmit} />
        
-      {movies.length > 0 && totalPages > 1 && (
-        <Pagination
-          totalPages={totalPages}
-          page={page}
-          setPage={setPage}
+      {movies.length > 0 && pageCount > 1 && (
+        <ReactPaginate
+          pageCount={pageCount}
+          onPageChange={page}
+          forcePage={setPage}
         />
       )}
 
@@ -62,9 +70,9 @@ export default function App() {
         {isError && <ErrorMessage />}
         {isLoading && <Loader />}
 
-        {isFetched && movies.length === 0 && !isLoading && (
+        {/* {isFetched && movies.length === 0 && !isLoading && (
           <p>No movies found for your request</p>
-        )}
+        )} */}
       </main>
 
       <Toaster />
