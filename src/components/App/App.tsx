@@ -53,12 +53,15 @@ export default function App() {
       {movies.length > 0 && pageCount > 1 && (
         <ReactPaginate
           pageCount={pageCount}
-          onPageChange={page}
-          forcePage={setPage}
+          forcePage={page}
+          onPageChange={setPage}
         />
       )}
 
-      <MovieGrid movies={movies} onSelect={setSelectedMovie} />
+      {movies.length > 0 && (
+        <MovieGrid movies={movies} onSelect={setSelectedMovie} />
+      )}
+      
       {selectedMovie && (
         <MovieModal 
           movie={selectedMovie} 
@@ -69,10 +72,6 @@ export default function App() {
       <main>
         {isError && <ErrorMessage />}
         {isLoading && <Loader />}
-
-        {/* {isFetched && movies.length === 0 && !isLoading && (
-          <p>No movies found for your request</p>
-        )} */}
       </main>
 
       <Toaster />
